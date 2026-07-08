@@ -1,0 +1,20 @@
+project_name: "Backlog.md Hub"
+name: "Backlog.md Hub"
+default_status: "To Do"
+statuses: ["To Do", "In Progress", "Done"]
+labels: []
+date_format: yyyy-mm-dd
+max_column_width: 20
+auto_open_browser: false
+default_port: 6429
+remote_operations: false
+auto_commit: false
+filesystem_only: false
+bypass_git_hooks: false
+check_active_branches: true
+active_branch_days: 30
+task_prefix: "task"
+definition_of_done:
+  - "Description の ## 決定事項 に決定内容が記録されている"
+  - "Implementation Plan に決定事項を分解した todo がある"
+  - "Implementation Notes に検討経緯が記録されている"

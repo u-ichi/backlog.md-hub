@@ -1,0 +1,6 @@
+{
+  "sources": [
+    { "type": "repo", "path": "~/projects/foo" },
+    { "type": "base_dir", "path": "~/my-repos" }
+  ]
+}

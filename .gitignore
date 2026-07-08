@@ -1,0 +1,6 @@
+node_modules/
+tmp/
+.DS_Store
+# hub が child spawn した backlog browser の log (Phase 2)
+backlog/logs/
+.codex/

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.github.u-ichi.backlog-md-hub</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>-c</string>
+    <string>exec node "@@REPO_ROOT@@/scripts/backlog-hub-server.js"</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    <key>BACKLOG_HUB_MANAGE_BROWSERS</key>
+    <string>1</string>
+    <key>BACKLOG_HUB_HOST</key>
+    <string>@@HUB_HOST@@</string>
+  </dict>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>@@HOME@@/Library/Logs/backlog-md/hub.log</string>
+  <key>StandardErrorPath</key>
+  <string>@@HOME@@/Library/Logs/backlog-md/hub.log</string>
+</dict>
+</plist>
