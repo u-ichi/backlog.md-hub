@@ -2,15 +2,32 @@
 
 🇯🇵 日本語版。English README: [README.md](README.md)
 
-Backlog.md Hub は、複数の [Backlog.md](https://github.com/MrLesk/Backlog.md) プロジェクトを 1 つの browser UI で扱うためのローカル daemon です。
+## なぜ作ったか
 
-hub は JSON config を読み、Backlog.md repository を検出し、`backlog browser` の child process を起動して、横断 task board を提供します。これは Backlog.md の非公式 companion であり、上流 project の一部ではありません。
+Claude Code や Codex に複数の project を並行で走らせるようになると、同時に立てておきたい `backlog browser` の数がすぐに増えます。project ごとに Backlog.md の state があり、port があり、browser tab があります。「今どの project の誰が何で詰まっているのか」を確認するのに、tab 切り替えで時間が溶けます。project 横断の問い ―「全 project を通して、いま何が In Progress か」― には置き場所がありません。
+
+Backlog.md Hub はその問題だけを解くための小さなローカル daemon です。1 つの config file に repository 一覧を書いておくと、各 repository について `backlog browser` を起動し続け、その横断 task board を 1 つの HTTP URL で提供します。
+
+これは [Backlog.md](https://github.com/MrLesk/Backlog.md) の非公式 companion であり、上流 project の一部ではありません。
+
+## これまでの回避策と、その頭打ち
+
+複数 project で Backlog.md を使っていると、次のような対処に見覚えがあるはずです。どれもある程度までは機能しますが、project 数が増えると必ずどこかで破綻します。
+
+| 回避策 | 頭打ちになるポイント |
+| --- | --- |
+| project ごとに `backlog browser` を都度起動する | port が衝突し、process が溜まり、bookmark すべき単一 URL が無い |
+| project ごとに `launchd` job を並べる | project が増えるたびに plist を書き、port 割当を別途管理する必要がある |
+| browser tab を N 個開いておく | project 横断のビューが無く、「今すべてで何が動いているか」を一望できない |
+| Backlog.md をやめて hosted tracker に乗り換える | local-first・in-repo・agent と相性が良い、という Backlog.md の性質を捨てることになる |
+
+Backlog.md Hub は「repo ごとに browser を立てる + 1 箇所から見る」という pattern を宣言的に扱えるようにします。config に repository を列挙するだけで、process の面倒と横断ビューは hub 側が引き受けます。
 
 ## Requirements
 
 - macOS。同梱 service installer は launchd を使います。
-- `PATH` または `/opt/homebrew/bin/node` に Node.js があること。hub は Node.js built-in module だけを使い、npm dependency install step はありません。
-- `PATH` に Backlog.md CLI があること。ない場合は `BACKLOG_HUB_CLI_PATH` を設定すること。
+- `PATH` または `/opt/homebrew/bin/node` に Node.js があること。hub は Node.js built-in module だけを使い、npm install step はありません。
+- `PATH` に Backlog.md CLI があること。ない場合は `BACKLOG_HUB_CLI_PATH` を設定してください。
 - Backlog.md 初期化済み repository が 1 つ以上あること。
 
 ## Quick Start
@@ -109,6 +126,14 @@ hub 本体は Claude Code を必要としません。任意の Claude Code integ
 - child browser process は config 変更時に reconcile され、crash 後は backoff 付きで再起動され、連続失敗時は quarantine され、hub 停止時に一緒に停止されます。
 - `launchd/com.github.u-ichi.backlog-md-hub.plist.template` は `bin/install-backlog-launchd.sh` が render します。
 - installer は OSS 公開前に original author が使っていた legacy launchd label (`com.u-kt.backlog-hub`) からの migration をサポートします。その label が存在しない環境では migration path は何もせず終了します。
+
+## 位置付け
+
+Backlog.md Hub の scope は、「作業卓としての task 集約」側です。既存の Backlog.md `backlog browser` を 1 つの view に集約して、agent (と、それを回す人間) が全 project の状況を単一 URL で見られるようにします。
+
+一方、agent が生成した成果物をレビューしたり社外を含めて共有したりする側は、この project の scope ではありません。そちら側は、session 限定の一時プレビューと HTML 内コメントを扱う [reviewable-html-workbench](https://github.com/u-ichi/reviewable-html-workbench)、そしてドメイン限定の恒久共有 URL を扱う `publicar` を別途使っています。これらは Backlog.md Hub の隣に並ぶ tool であって、上に重ねるものではありません。
+
+上流の [Backlog.md](https://github.com/MrLesk/Backlog.md) 本体は、CLI、on-disk task 形式、project ごとの browser の管理元です。hub はそれを wrap しているだけです。
 
 ## Uninstall
 

@@ -1,10 +1,10 @@
 ---
 id: TASK-4
 title: OSS 公開作業 (LICENSE / scrub / 履歴リセット / repo public 化)
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-07-08 14:54'
-updated_date: '2026-07-08 15:41'
+updated_date: '2026-07-09 00:33'
 labels:
   - backlog-hub
   - oss
@@ -37,14 +37,14 @@ repo `u-ichi/backlog.md-hub` を GitHub で public 化する。公開固有 Phas
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 GitHub repo u-ichi/backlog.md-hub が public 表示になっている (gh repo view で visibility=PUBLIC)
-- [ ] #2 LICENSE (MIT, Copyright Yuichi Uemura) が repo root に存在し、GitHub の repo overview で MIT 表示になる
-- [ ] #3 README.md (英) + README.ja.md (日) の 2 file が存在し、requirements / quick start / config reference / Remote access (Tailscale) / Claude Code 統合 (optional) / uninstall 節を含む
-- [ ] #4 .gitignore に .codex/ が追加され、ignored 扱いになる
-- [ ] #5 launchd label が OSS 向け label に改名され、旧 label は migration / rollback 用 literal 以外に残っていない
-- [ ] #6 scrub gate 通過: tracked file の走査で指定 pattern は migration / rollback 用 literal と README の説明行だけに限定される
-- [ ] #7 履歴リセット完了: log で public 化用の 1 commit のみ、backup bundle が repo 外に保全
-- [ ] #8 fresh clone で導入 flow が成立する: 別 tmp dir で clone → launchd installer preflight → healthz OK + repo child spawn + task view 表示
+- [x] #1 GitHub repo u-ichi/backlog.md-hub が public 表示になっている (gh repo view で visibility=PUBLIC)
+- [x] #2 LICENSE (MIT, Copyright Yuichi Uemura) が repo root に存在し、GitHub の repo overview で MIT 表示になる
+- [x] #3 README.md (英) + README.ja.md (日) の 2 file が存在し、requirements / quick start / config reference / Remote access (Tailscale) / Claude Code 統合 (optional) / uninstall 節を含む
+- [x] #4 .gitignore に .codex/ が追加され、ignored 扱いになる
+- [x] #5 launchd label が OSS 向け label に改名され、旧 label は migration / rollback 用 literal 以外に残っていない
+- [x] #6 scrub gate 通過: tracked file の走査で指定 pattern は migration / rollback 用 literal と README の説明行だけに限定される
+- [x] #7 履歴リセット完了: log で public 化用の 1 commit のみ、backup bundle が repo 外に保全
+- [x] #8 fresh clone で導入 flow が成立する: 別 tmp dir で clone → launchd installer preflight → healthz OK + repo child spawn + task view 表示
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -91,6 +91,12 @@ critic から Conditional Go + must-fix 5 件を受領し全採用: (1) Phase 1 
 - 不確実性: fresh clone 通し確認で発見される欠落 (config schema / preflight 検査の穴)、上流 backlog CLI 挙動
 - カレンダー期間: 人間レビュー 2 回 × 可用性で 1〜2 日 (TASK-3 完了待ち含めず)
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+OSS 公開作業完了。u-ichi/backlog.md-hub は public + MIT + description + topics 設定済み、fresh clone → preflight → config.example.json schema OK まで通し確認。commit history は orphan initial (SHA d5c45d6) の 1 commit、旧 3 commit は backup bundle ~/backup/backlog.md-hub-pre-oss-20260709.bundle に保全。稼働中 launchd は com.github.u-ichi.backlog-md-hub (127.0.0.1:6419) に切替済み、旧 com.u-kt.* は完全消滅。plan file /Users/u1/.claude/plans/oss-sharded-eclipse.md の Phase 0-6 を全 6 commit で完走 (9c7f474 → 05e94e8 → aa154a7 → 3f15c1e (親 repo) → e4f8b80 → d5c45d6)。
+<!-- SECTION:FINAL_SUMMARY:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->

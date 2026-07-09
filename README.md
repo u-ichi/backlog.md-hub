@@ -2,14 +2,31 @@
 
 🌐 日本語版 → [README.ja.md](README.ja.md)
 
-Backlog.md Hub is a small local daemon for running and viewing multiple [Backlog.md](https://github.com/MrLesk/Backlog.md) projects from one browser UI.
+## Why this exists
 
-The hub reads a JSON config, discovers Backlog.md repositories, starts `backlog browser` child processes, and serves a cross-repository task board. It is an unofficial companion for Backlog.md, not part of the upstream project.
+Once you let Claude Code or Codex drive work across several projects at once, the number of `backlog browser` instances you need running at the same time goes up fast. Each project has its own Backlog.md state, its own port, and its own browser tab. Switching between them to answer "who's blocked on what" turns into tab-hunting, and cross-project questions ("what's actually in progress right now, across everything?") have no place to land.
+
+Backlog.md Hub is a small local daemon that solves that specific problem. It reads one config file listing your repositories, keeps a `backlog browser` running for each one, and serves a single cross-repo task board over HTTP.
+
+It is an unofficial companion for [Backlog.md](https://github.com/MrLesk/Backlog.md), not part of the upstream project.
+
+## What people were doing before
+
+If you have been running Backlog.md across many projects, the workarounds probably look familiar. Each of them works up to a point.
+
+| Workaround | Where it breaks down |
+| --- | --- |
+| Start `backlog browser` per project as needed | Ports collide, processes accumulate, and there is no single URL to bookmark |
+| One `launchd` job per project | Every new project means a new plist; port allocation has to be tracked out of band |
+| Keep N browser tabs open | No cross-project view; hard to see "everything in progress right now" |
+| Skip Backlog.md and use a hosted tracker | Loses the local-first, in-repo, agent-friendly properties of Backlog.md |
+
+Backlog.md Hub takes the "one browser per repo, surfaced from one place" pattern and makes it declarative: you list the repositories in a config file, and the hub takes care of the process lifecycle and the aggregated view.
 
 ## Requirements
 
 - macOS. The included service installer uses launchd.
-- Node.js available on `PATH` or at `/opt/homebrew/bin/node`. The hub uses only built-in Node.js modules and has no npm dependency install step.
+- Node.js available on `PATH` or at `/opt/homebrew/bin/node`. The hub uses only built-in Node.js modules and has no npm install step.
 - Backlog.md CLI available on `PATH`, or set `BACKLOG_HUB_CLI_PATH`.
 - One or more repositories initialized with Backlog.md.
 
@@ -93,7 +110,7 @@ Individual `backlog browser` child processes are spawned by the upstream CLI, an
 
 ## Claude Code Integration
 
-The hub itself does not require Claude Code. Optional Claude Code integration lives under `integrations/claude-code/` and installs a thin SessionStart hook that sets the current pane's Backlog.md URL when a project has a configured Backlog.md browser port.
+The hub itself does not require Claude Code. An optional integration lives under `integrations/claude-code/` and installs a thin SessionStart hook that sets the current pane's Backlog.md URL when a project has a configured Backlog.md browser port.
 
 Install the optional integration with:
 
@@ -109,6 +126,14 @@ Install the optional integration with:
 - Child browser processes are reconciled when config changes, restarted with backoff after crashes, quarantined after repeated failures, and stopped with the hub.
 - `launchd/com.github.u-ichi.backlog-md-hub.plist.template` is rendered by `bin/install-backlog-launchd.sh`.
 - The installer supports migration from a legacy launchd label (`com.u-kt.backlog-hub`) that the original author used prior to OSS release. On environments without that label the migration path is a no-op.
+
+## Where it fits
+
+Backlog.md Hub is scoped to the engineer's task cockpit side of the workflow. It aggregates existing Backlog.md `backlog browser` instances into one view, so an agent (or the human running one) can see what is in progress across every project at a single URL.
+
+Reviewing and sharing agent-generated artifacts is a separate concern that this project does not try to cover. For that side of the workflow, I use [reviewable-html-workbench](https://github.com/u-ichi/reviewable-html-workbench) for session-scoped previews with in-HTML comments, and `publicar` for domain-restricted permanent share URLs. Those tools sit next to Backlog.md Hub, not on top of it.
+
+Upstream [Backlog.md](https://github.com/MrLesk/Backlog.md) itself remains the source of truth for the CLI, the on-disk task format, and the per-project browser. The hub only wraps that.
 
 ## Uninstall
 

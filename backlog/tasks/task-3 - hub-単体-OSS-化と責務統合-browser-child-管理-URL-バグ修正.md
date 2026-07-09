@@ -1,10 +1,10 @@
 ---
 id: TASK-3
 title: hub 単体 OSS 化と責務統合 (browser child 管理 + URL バグ修正)
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-07-08 04:34'
-updated_date: '2026-07-08 15:43'
+updated_date: '2026-07-09 00:34'
 labels:
   - backlog-hub
   - architecture
@@ -42,28 +42,24 @@ hub (`scripts/backlog-hub-server.js`) を repo 内に閉じ込め、単体で `b
 - Claude Code 統合は optional layer として repo 内に残すが、hub 本体からは切り離す
 <!-- SECTION:DESCRIPTION:END -->
 
+## Definition of Done
+<!-- DOD:BEGIN -->
+- [x] #1 Description の ## 決定事項 に決定内容が記録されている
+- [x] #2 Implementation Plan に決定事項を分解した todo がある
+- [x] #3 Implementation Notes に検討経緯が記録されている
+<!-- DOD:END -->
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+## Acceptance Criteria
+<!-- AC:BEGIN -->
+- [x] #1 hub 単体で起動でき、config で指定した repo に対し backlog browser を child 起動する
+- [x] #2 child process が crash した場合、hub が自動再起動する (backoff 付き)
+- [x] #3 config 変更を検知して reconcile する (追加 repo は spawn / 削除 repo は kill)
+- [x] #4 hub UI から task をクリックすると当該 repo の Backlog.md web UI (top URL) が別 tab で開く
+- [x] #5 legacy port state / watchdog / external port allocation script への依存が hub 本体から消えている
+- [x] #6 hub 停止時に子 browser も grace kill される (SIGTERM → SIGKILL fallback)
+- [x] #7 script / config / logs が repo 内または XDG config / repository log directory に閉じ、LaunchAgent plist のみ user LaunchAgents 配下に置かれる
+- [x] #8 README に OSS 単体運用と Claude Code 統合運用の 2 mode の起動手順が書かれている
+<!-- AC:END -->
 
 ## Implementation Plan
 
@@ -134,21 +130,8 @@ hub の port 参照を `backlog/config.yml` の `default_port` 直読に置換 (
 - 検証: hub 再起動 → healthz OK / child process / `/api/tasks` で `backlog.md-hub` として認識
 <!-- SECTION:NOTES:END -->
 
-## Definition of Done
-<!-- DOD:BEGIN -->
-- [ ] #1 Description の ## 決定事項 に決定内容が記録されている
-- [ ] #2 Implementation Plan に決定事項を分解した todo がある
-- [ ] #3 Implementation Notes に検討経緯が記録されている
-<!-- DOD:END -->
+## Final Summary
 
-## Acceptance Criteria
-<!-- AC:BEGIN -->
-- [ ] #1 hub 単体で起動でき、config で指定した repo に対し backlog browser を child 起動する
-- [ ] #2 child process が crash した場合、hub が自動再起動する (backoff 付き)
-- [ ] #3 config 変更を検知して reconcile する (追加 repo は spawn / 削除 repo は kill)
-- [ ] #4 hub UI から task をクリックすると当該 repo の Backlog.md web UI (top URL) が別 tab で開く
-- [ ] #5 legacy port state / watchdog / external port allocation script への依存が hub 本体から消えている
-- [ ] #6 hub 停止時に子 browser も grace kill される (SIGTERM → SIGKILL fallback)
-- [ ] #7 script / config / logs が repo 内または XDG config / repository log directory に閉じ、LaunchAgent plist のみ user LaunchAgents 配下に置かれる
-- [ ] #8 README に OSS 単体運用と Claude Code 統合運用の 2 mode の起動手順が書かれている
-<!-- AC:END -->
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+hub 単体 OSS 化と責務統合完了。Phase 1/2 (child manager + browsers-ensure 廃止) を SHA 4cdc68a で先行 commit、その後 Phase 3-5 を SHA 9c7f474/05e94e8/aa154a7/e4f8b80 で完走。稼働中 launchd は com.github.u-ichi.backlog-md-hub (127.0.0.1:6419、hub が browser 10 repo を child 管理) に切替済み。README に 2 mode 手順記載、AC 8/8 達成。OSS 公開作業は TASK-4 で完走 (repo public 化済み)。
+<!-- SECTION:FINAL_SUMMARY:END -->
