@@ -46,7 +46,10 @@ Backlog.md Hub takes the "one browser per repo, surfaced from one place" pattern
    cp ~/backlog.md-hub/config.example.json "${XDG_CONFIG_HOME:-$HOME/.config}/backlog-md-hub/config.json"
    ```
 
-3. Edit the copied config and point `sources` at your Backlog.md repositories.
+3. Edit the copied config. `sources` accepts two kinds of entries, which you can mix in the same array:
+
+   - `{ "type": "base_dir", "path": "~/projects" }` — scan a parent directory and pick up every subdirectory that has Backlog.md initialized. Point this at your `projects/` directory to include everything under it in one line.
+   - `{ "type": "repo", "path": "~/agent" }` — add one specific repository by path. Use this for a repo that lives outside your `base_dir`, for example an agent-orchestration workspace at your home root.
 
 4. Run preflight:
 
