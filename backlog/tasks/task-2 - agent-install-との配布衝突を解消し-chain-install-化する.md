@@ -1,10 +1,10 @@
 ---
 id: TASK-2
 title: agent install との配布衝突を解消し chain install 化する
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-07-07 04:50'
-updated_date: '2026-07-08 15:41'
+updated_date: '2026-07-10 01:51'
 labels:
   - install
   - hook
@@ -29,21 +29,21 @@ Backlog.md Hub installer は standalone 実行を維持する。関連 hook の 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 agent/install.sh から backlog 系 5 file の cleanup entry が消えている
-- [ ] #2 agent/install.sh 末尾で projects/backlog.md.all/install.sh を chain 呼び出しし、失敗時は warn で継続する
-- [ ] #3 chain 直後に 5 file 存在確認 loop があり、欠落時は warn を出す
-- [ ] #4 hook の SC1010 が解消され shellcheck が通る (bbh_log "done")
-- [ ] #5 backlog.md.all/install.sh 単独実行でも従来通り配布が完結する
-- [ ] #6 backlog.md.all/install.sh 実行後、~/.claude/scripts/ に 5 file が復元されている
-- [ ] #7 launchctl print で hub / browsers 両 service が登録済みかつ稼働状態である
-- [ ] #8 curl http://localhost:6419/healthz が ok を返す
-- [ ] #9 lead pane から hook 手動発火で backlog-browser-hook-*.log に tag=done が記録される
-- [ ] #10 hook 手動発火後、対象 pane の @ai_backlog_url が set されている
-- [ ] #11 agent/install.sh 通し実行後に ~/.claude/scripts/ の 5 file が残存し、chain ok ログが出ている
-- [ ] #12 bash -n / shellcheck が両 install.sh + hook 本体 3 file 全通過
-- [ ] #13 bin/lint-absolute-paths.sh が agent repo で通過
-- [ ] #14 agent repo commit に install.sh 以外の 3 file (docs/architecture.md 他) が含まれていない
-- [ ] #15 backlog.md.all commit に hook logging + SC1010 修正 + README 追記が含まれる
+- [x] #1 agent/install.sh から backlog 系 5 file の cleanup entry が消えている
+- [x] #2 agent/install.sh 末尾で projects/backlog.md.all/install.sh を chain 呼び出しし、失敗時は warn で継続する
+- [x] #3 chain 直後に 5 file 存在確認 loop があり、欠落時は warn を出す
+- [x] #4 hook の SC1010 が解消され shellcheck が通る (bbh_log "done")
+- [x] #5 backlog.md.all/install.sh 単独実行でも従来通り配布が完結する
+- [x] #6 backlog.md.all/install.sh 実行後、~/.claude/scripts/ に 5 file が復元されている
+- [x] #7 launchctl print で hub / browsers 両 service が登録済みかつ稼働状態である
+- [x] #8 curl http://localhost:6419/healthz が ok を返す
+- [x] #9 lead pane から hook 手動発火で backlog-browser-hook-*.log に tag=done が記録される
+- [x] #10 hook 手動発火後、対象 pane の @ai_backlog_url が set されている
+- [x] #11 agent/install.sh 通し実行後に ~/.claude/scripts/ の 5 file が残存し、chain ok ログが出ている
+- [x] #12 bash -n / shellcheck が両 install.sh + hook 本体 3 file 全通過
+- [x] #13 bin/lint-absolute-paths.sh が agent repo で通過
+- [x] #14 agent repo commit に install.sh 以外の 3 file (docs/architecture.md 他) が含まれていない
+- [x] #15 backlog.md.all commit に hook logging + SC1010 修正 + README 追記が含まれる
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -84,9 +84,15 @@ critic (%36) review で Conditional Go。指摘 5 件を lead が直接確認し
 TASK-1 (Backlog Hub UI リフレッシュ) と作業対象が重複しないよう Phase 分離: TASK-1 は renderHtml() 改修、本 task は install.sh + hook 診断 log。両者は同じ 5 file の配布復旧を必要とするため、install.sh 修正が先に merge されると TASK-1 の live 反映も楽になる。
 <!-- SECTION:NOTES:END -->
 
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+agent install との配布衝突解消 + chain install 化を前セッション f139919/df9511e で実装、全 15 AC 達成 (chain 実行 / hook SC1010 修正 / launchctl print / healthz / hook 手動発火 / lint 全通過)。本セッション Phase 2 で hub server の ~/.claude/scripts/ コピー配布を廃止し launchd 直接参照化したため、AC #1/#3/#6/#7/#11 が言及する『5 file 配布』は現在『2 file (hook + lib) 配布 + hub server は repo 内 scripts/ 直接参照』に進化。配布衝突解消と個別 install 完結の趣旨は維持。親 repo warn list も Phase 2.5 (3f15c1e) で新配布先に整合済み。
+<!-- SECTION:FINAL_SUMMARY:END -->
+
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] #1 Description の ## 決定事項 に決定内容が記録されている
-- [ ] #2 Implementation Plan に決定事項を分解した todo がある
-- [ ] #3 Implementation Notes に検討経緯が記録されている
+- [x] #1 Description の ## 決定事項 に決定内容が記録されている
+- [x] #2 Implementation Plan に決定事項を分解した todo がある
+- [x] #3 Implementation Notes に検討経緯が記録されている
 <!-- DOD:END -->

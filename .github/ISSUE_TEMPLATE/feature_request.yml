@@ -1,0 +1,52 @@
+name: Feature request
+description: Suggest a change to how the hub behaves or is installed.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please read the "Scope" section of [CONTRIBUTING.md](../../CONTRIBUTING.md) first. This project intentionally stays small; requests that expand its scope substantially will likely be declined.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Describe the situation and the friction, not the solution.
+    validations:
+      required: true
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Current workaround (if any)
+      description: How are you handling this today without the change?
+    validations:
+      required: false
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: One or more concrete ideas. It is fine to leave this vague if you just want to open a discussion.
+    validations:
+      required: true
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Which area does this touch?
+      multiple: true
+      options:
+        - Hub server (scripts/backlog-hub-server.js)
+        - Child supervision (spawn / restart / reconcile)
+        - Config file (schema, defaults)
+        - Installer (bin/install-backlog-launchd.sh, plist)
+        - UI (embedded HTML / CSS in scripts/backlog-hub-server.js)
+        - Documentation (README.md / README.ja.md)
+        - Claude Code integration (integrations/claude-code/)
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: compat
+    attributes:
+      label: Backward compatibility considerations
+      description: Config keys, env vars, launchd label, installed file paths, existing UI URLs.
+    validations:
+      required: false

@@ -1,10 +1,10 @@
 ---
 id: TASK-1
 title: Backlog Hub UI リフレッシュ (v2) 取り込み
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-07-07 03:35'
-updated_date: '2026-07-08 15:41'
+updated_date: '2026-07-10 01:51'
 labels:
   - ui
   - backlog-hub
@@ -29,15 +29,15 @@ ordinal: 1000
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 board view で repo section / milestone header / 3 列 board / progress bar / priority 左ボーダー (high/critical) / Done 列 opacity が仕様どおり表示される
-- [ ] #2 list view 切替が動く
-- [ ] #3 theme toggle が dark と light を切替、localStorage で保持する
-- [ ] #4 sidebar Repos クリックで repo フィルタが toggle し、複数選択が OR、0 件 repo が dim になる
-- [ ] #5 Search / Status / Label / Priority が input イベントで即時反映される
-- [ ] #6 viewport 920px 以下で topbar + drawer、810px 以下で board 2 列、480px 以下で 1 列縦積みになる
-- [ ] #7 カードリンクが純正 Backlog.md web UI の URL (task_url) を指す
-- [ ] #8 UI の repo 数 / task 総数が /api/tasks 実データと一致する (mock 混入が無いことを確認)
-- [ ] #9 live URL (port 6419) で healthz ok + 新 UI が表示される
+- [x] #1 board view で repo section / milestone header / 3 列 board / progress bar / priority 左ボーダー (high/critical) / Done 列 opacity が仕様どおり表示される
+- [x] #2 list view 切替が動く
+- [x] #3 theme toggle が dark と light を切替、localStorage で保持する
+- [x] #4 sidebar Repos クリックで repo フィルタが toggle し、複数選択が OR、0 件 repo が dim になる
+- [x] #5 Search / Status / Label / Priority が input イベントで即時反映される
+- [x] #6 viewport 920px 以下で topbar + drawer、810px 以下で board 2 列、480px 以下で 1 列縦積みになる
+- [x] #7 カードリンクが純正 Backlog.md web UI の URL (task_url) を指す
+- [x] #8 UI の repo 数 / task 総数が /api/tasks 実データと一致する (mock 混入が無いことを確認)
+- [x] #9 live URL (port 6419) で healthz ok + 新 UI が表示される
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -54,9 +54,15 @@ ordinal: 1000
 9. ./install.sh → cmp → LaunchAgent 再起動 → 起動時刻更新 + healthz + live URL 実機確認
 <!-- SECTION:PLAN:END -->
 
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+UI v2 refresh 実装完了 (前セッション 4cdc68a)、本セッションで稼働中 hub (http://127.0.0.1:6419/) の実測で全 9 AC 達成を確認。board / list view 切替、light/dark theme、mobile drawer、priority stripe、progress bar、compact card layout、repoNav count + progress、taskUrlFor は Backlog.md 純正 web UI の repo top URL (deep link は上流未実装)、/api/tasks 10 repo 実データ一致、healthz ok。
+<!-- SECTION:FINAL_SUMMARY:END -->
+
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] #1 Description の ## 決定事項 に決定内容が記録されている
-- [ ] #2 Implementation Plan に決定事項を分解した todo がある
-- [ ] #3 Implementation Notes に検討経緯が記録されている
+- [x] #1 Description の ## 決定事項 に決定内容が記録されている
+- [x] #2 Implementation Plan に決定事項を分解した todo がある
+- [x] #3 Implementation Notes に検討経緯が記録されている
 <!-- DOD:END -->

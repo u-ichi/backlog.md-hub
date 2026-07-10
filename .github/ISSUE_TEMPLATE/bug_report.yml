@@ -1,0 +1,81 @@
+name: Bug report
+description: Something is broken or behaves differently from what the README describes.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. Please fill in as much of the following as you can — the hub log and preflight output are usually enough to reproduce.
+  - type: input
+    id: version
+    attributes:
+      label: Backlog.md Hub commit / tag
+      description: Output of `git -C <clone> rev-parse HEAD` or the release tag you installed.
+      placeholder: e.g. v0.1.0 or e11fe21
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: e.g. 15.3
+    validations:
+      required: true
+  - type: input
+    id: node
+    attributes:
+      label: Node.js version
+      description: Output of `node --version`.
+      placeholder: e.g. v22.6.0
+    validations:
+      required: true
+  - type: input
+    id: backlog
+    attributes:
+      label: Backlog.md CLI version
+      description: Output of `backlog --version`.
+    validations:
+      required: false
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include any error messages verbatim.
+    validations:
+      required: true
+  - type: textarea
+    id: preflight
+    attributes:
+      label: Preflight output
+      description: Paste the output of `bin/install-backlog-launchd.sh --preflight-only`.
+      render: text
+    validations:
+      required: false
+  - type: textarea
+    id: hublog
+    attributes:
+      label: Hub log
+      description: Relevant lines from `~/Library/Logs/backlog-md/hub.log`. Trim to the incident window.
+      render: text
+    validations:
+      required: false
+  - type: textarea
+    id: config
+    attributes:
+      label: Config (anonymized)
+      description: A minimal `config.json` that reproduces the problem. Replace real paths with placeholders like `~/projects/example`.
+      render: json
+    validations:
+      required: false
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction steps
+    validations:
+      required: false
