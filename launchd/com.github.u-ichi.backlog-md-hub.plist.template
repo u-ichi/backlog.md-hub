@@ -18,6 +18,8 @@
     <string>1</string>
     <key>BACKLOG_HUB_HOST</key>
     <string>@@HUB_HOST@@</string>
+    <key>BACKLOG_HUB_TAILSCALE_LISTEN</key>
+    <string>@@TAILSCALE_LISTEN@@</string>
   </dict>
   <key>RunAtLoad</key>
   <true/>

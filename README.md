@@ -94,6 +94,7 @@ Supported environment variables:
 
 - `BACKLOG_HUB_PORT`: hub HTTP port. Default: `6419`.
 - `BACKLOG_HUB_HOST`: hub bind host. Default: `127.0.0.1`.
+- `BACKLOG_HUB_TAILSCALE_LISTEN`: set to `true` to add a listener on the current Tailscale IPv4 address. Default: `false`.
 - `BACKLOG_HUB_CONFIG`: explicit config file path. Default: the XDG config path above.
 - `BACKLOG_HUB_CLI_PATH`: absolute path to the `backlog` CLI when it is not on `PATH`.
 - `BACKLOG_HUB_MANAGE_BROWSERS`: set to `1` to let the hub spawn and supervise `backlog browser` child processes.
@@ -101,13 +102,15 @@ Supported environment variables:
 
 ## Remote Access
 
-The hub binds to `127.0.0.1` by default because it serves an unauthenticated local UI. To use it over a trusted private network such as Tailscale, opt in at install time:
+The hub binds to `127.0.0.1` by default because it serves an unauthenticated local UI. To keep localhost access and add access through Tailscale, opt in at install time:
 
 ```bash
-BACKLOG_HUB_HOST=0.0.0.0 bin/install-backlog-launchd.sh
+BACKLOG_HUB_TAILSCALE_LISTEN=true bin/install-backlog-launchd.sh
 ```
 
-Only expose the port on networks you trust.
+The hub resolves the Tailscale IPv4 address from the operating system's network interfaces, requiring the Tailscale ULA IPv6 prefix on the same interface, and does not bind the additional listener to LAN addresses or `0.0.0.0`. If Tailscale is not ready, localhost remains available and the additional listener is retried with backoff. The installer preserves the existing flag value on later runs unless the environment variable is explicitly supplied again.
+
+Only expose the port on networks you trust. Tailscale access is still subject to your Tailscale ACLs; the hub itself does not add authentication.
 
 Individual `backlog browser` child processes are spawned by the upstream CLI, and their bind behavior is controlled by the upstream CLI rather than by this hub.
 

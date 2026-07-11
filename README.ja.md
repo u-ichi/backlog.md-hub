@@ -94,6 +94,7 @@ ${XDG_CONFIG_HOME:-$HOME/.config}/backlog-md-hub/config.json
 
 - `BACKLOG_HUB_PORT`: hub HTTP port。既定値は `6419`。
 - `BACKLOG_HUB_HOST`: hub bind host。既定値は `127.0.0.1`。
+- `BACKLOG_HUB_TAILSCALE_LISTEN`: `true` にすると現在の Tailscale IPv4 address に listener を追加します。既定値は `false`。
 - `BACKLOG_HUB_CONFIG`: 明示的な config file path。既定値は上記 XDG config path。
 - `BACKLOG_HUB_CLI_PATH`: `backlog` CLI が `PATH` にない場合の絶対パス。
 - `BACKLOG_HUB_MANAGE_BROWSERS`: `1` にすると hub が `backlog browser` child process を起動・監視します。
@@ -101,13 +102,15 @@ ${XDG_CONFIG_HOME:-$HOME/.config}/backlog-md-hub/config.json
 
 ## Remote Access
 
-hub は認証なしの local UI を提供するため、既定では `127.0.0.1` に bind します。Tailscale など信頼できる private network 越しに使う場合だけ、install 時に明示的に opt-in してください。
+hub は認証なしの local UI を提供するため、既定では `127.0.0.1` に bind します。localhost access を維持したまま Tailscale 経由の access を追加する場合は、install 時に明示的に opt-in してください。
 
 ```bash
-BACKLOG_HUB_HOST=0.0.0.0 bin/install-backlog-launchd.sh
+BACKLOG_HUB_TAILSCALE_LISTEN=true bin/install-backlog-launchd.sh
 ```
 
-信頼できない network へ port を公開しないでください。
+hub は OS の network interface から Tailscale IPv4 address を解決します。同じ interface に Tailscale ULA IPv6 prefix があることも確認し、追加 listener を LAN address や `0.0.0.0` へ bind しません。Tailscale が未準備でも localhost は利用でき、追加 listener だけを backoff 付きで再試行します。installer を再実行した時は、環境変数を再指定しない限り既存の flag 値を引き継ぎます。
+
+信頼できない network へ port を公開しないでください。Tailscale access には Tailscale ACL が引き続き適用されますが、hub 自体は認証を追加しません。
 
 個別の `backlog browser` child process は upstream CLI が起動するため、その bind 挙動はこの hub ではなく upstream CLI 側の制御に従います。
 

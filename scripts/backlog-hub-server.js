@@ -6,9 +6,12 @@ const fs = require("fs");
 const path = require("path");
 const os = require("os");
 const { spawn } = require("child_process");
+const { ListenerManager, parseBooleanFlag } = require("./listener-manager");
 
 const PORT = numberFromEnv("BACKLOG_HUB_PORT", 6419);
 const HOST = process.env.BACKLOG_HUB_HOST || "127.0.0.1";
+const TAILSCALE_LISTEN_RAW = process.env.BACKLOG_HUB_TAILSCALE_LISTEN;
+const TAILSCALE_LISTEN = parseBooleanFlag(TAILSCALE_LISTEN_RAW, false);
 const HUB_CONFIG = process.env.BACKLOG_HUB_CONFIG || path.join(process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config"), "backlog-md-hub", "config.json");
 const META_TTL_MS = 60_000;
 const TASK_TTL_MS = 3_000;
@@ -37,6 +40,10 @@ function log(level, message) {
   } else {
     console.error(line);
   }
+}
+
+if (TAILSCALE_LISTEN_RAW !== undefined && TAILSCALE_LISTEN_RAW !== "true" && TAILSCALE_LISTEN_RAW !== "false") {
+  log("WARN", `invalid BACKLOG_HUB_TAILSCALE_LISTEN=${TAILSCALE_LISTEN_RAW}; Tailscale listener disabled`);
 }
 
 function realpathIfExists(filePath) {
@@ -1435,9 +1442,16 @@ setInterval(load, 30000);
 `;
 }
 
-const server = http.createServer(handleRequest);
-server.listen(PORT, HOST, () => {
-  log("INFO", `backlog hub listening on ${HOST}:${PORT}`);
+const listenerManager = new ListenerManager({
+  createServer: (handler) => http.createServer(handler),
+  requestHandler: handleRequest,
+  port: PORT,
+  primaryHost: HOST,
+  tailscaleListen: TAILSCALE_LISTEN,
+  log,
+});
+
+listenerManager.start(() => {
   if (process.env.BACKLOG_HUB_MANAGE_BROWSERS === "1") {
     watchHubConfig();
     scheduleReconcile("startup");
@@ -1450,7 +1464,7 @@ function shutdown(signal) {
   log("INFO", `${signal} received; closing backlog hub`);
   shuttingDown = true;
   killAllChildrenSync();
-  server.close(() => {
+  listenerManager.closeAll(() => {
     // 子の grace kill 完了まで待つ (最大 CHILD_KILL_GRACE_MS + 1s)
     setTimeout(() => process.exit(0), CHILD_KILL_GRACE_MS + 1_000).unref();
   });
