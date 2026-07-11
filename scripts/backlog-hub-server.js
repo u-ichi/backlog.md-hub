@@ -951,25 +951,37 @@ input[type="search"] {
   width: 100%;
 }
 input::placeholder { color: var(--faint); }
-/* inline filter rows: "Status        All ▾" */
-.frow {
-  display: flex; align-items: center; gap: 8px;
-  min-height: 26px;
-}
+.fgroup { display: flex; flex-direction: column; gap: 4px; }
+.fgroup > span { color: var(--muted); font-size: 12px; }
+.fgroup-picker { position: relative; }
+.frow { display: flex; align-items: center; gap: 8px; min-height: 26px; }
 .frow > span { color: var(--muted); font-size: 12px; flex: none; }
-.frow select {
-  flex: 1; min-width: 0; min-height: 26px;
-  border: 0; background: transparent;
-  color: var(--text); font: inherit; font-size: 12px;
-  text-align: right;
-  padding: 0 18px 0 0;
-  -webkit-appearance: none; appearance: none;
-  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23888e98' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 2px center;
-  cursor: pointer;
+.fpicker {
+  flex: 1; min-width: 0; min-height: 26px; border: 0;
+  background: transparent; color: var(--text); font: inherit; font-size: 12px;
+  text-align: right; padding: 0; cursor: pointer;
 }
-.frow select:hover { color: var(--accent); }
+.fpicker:hover { color: var(--accent); }
+.fpop {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 20;
+  max-height: 40vh; overflow-y: auto; padding: 8px;
+  border: 1px solid var(--line); border-radius: 7px;
+  background: var(--panel); box-shadow: var(--shadow);
+}
+.chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.chips button {
+  border: 0; border-radius: 999px; padding: 2px 8px;
+  background: var(--well); color: var(--muted);
+  font: inherit; font-size: 12px; cursor: pointer;
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: left;
+  white-space: normal;
+}
+.chips button:hover { color: var(--accent); }
+.chips button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); font-weight: 650; }
+#labelFilter { max-height: 30vh; overflow-y: auto; }
 /* view tabs: plain text + accent underline */
 .tabs { display: flex; gap: 16px; }
 .tabs button {
@@ -1179,9 +1191,17 @@ td a { color: var(--accent); text-decoration: none; font-weight: 600; }
     </section>
     <section class="sidebar-block" aria-label="Filters">
       <h2>Filter</h2>
-      <div class="frow"><span>Status</span><select id="statusFilter" aria-label="Status"><option value="">All</option></select></div>
-      <div class="frow"><span>Label</span><select id="labelFilter" aria-label="Label"><option value="">All</option></select></div>
-      <div class="frow"><span>Priority</span><select id="priorityFilter" aria-label="Priority"><option value="">All</option></select></div>
+      <div class="fgroup"><span>Status</span><div class="chips" id="statusFilter" role="group" aria-label="Status"></div></div>
+      <div class="fgroup"><span>Priority</span><div class="chips" id="priorityFilter" role="group" aria-label="Priority"></div></div>
+      <div class="fgroup fgroup-picker">
+        <div class="frow">
+          <span>Label</span>
+          <button type="button" id="labelPickerBtn" class="fpicker" aria-haspopup="listbox" aria-expanded="false" aria-controls="labelPickerPop">All ▾</button>
+        </div>
+        <div id="labelPickerPop" class="fpop" hidden>
+          <div class="chips" id="labelFilter" role="listbox" aria-multiselectable="true" aria-label="Label"></div>
+        </div>
+      </div>
     </section>
     <div class="summary" id="summary"></div>
   </aside>
@@ -1190,7 +1210,7 @@ td a { color: var(--accent); text-decoration: none; font-weight: 600; }
   </main>
 </div>
 <script>
-const state = { data: null, view: "board", error: "", repoSel: new Set() };
+const state = { data: null, view: "board", error: "", repoSel: new Set(), statusSel: new Set(), labelSel: new Set(), prioritySel: new Set(), labelPickerOpen: false };
 const statusColumns = ${JSON.stringify(STATUSES)};
 const STATUS_KEYS = { "To Do": "todo", "In Progress": "inprog", "Done": "done" };
 const els = {
@@ -1201,6 +1221,8 @@ const els = {
   status: document.getElementById("statusFilter"),
   label: document.getElementById("labelFilter"),
   priority: document.getElementById("priorityFilter"),
+  labelPickerBtn: document.getElementById("labelPickerBtn"),
+  labelPickerPop: document.getElementById("labelPickerPop"),
   boardTab: document.getElementById("boardTab"),
   listTab: document.getElementById("listTab"),
   nav: document.getElementById("repoNav")
@@ -1213,44 +1235,54 @@ function shortDate(value) {
   const year = String(new Date().getFullYear());
   return str.startsWith(year + "-") ? str.slice(5) : str;
 }
+// task file の labels フィールドが誤った YAML list 記法で保存された残骸
+// (例: '["慶應"', '"データスキーマ"', '"マイルストーン"]') を chip 化して表示すると
+// 見た目が破綻するため、hub 側で防御的に正規化する。
+function normLabel(value) {
+  return String(value == null ? "" : value).replace(/[\[\]"']/g, "").trim();
+}
 function allTasks() {
   if (!state.data) return [];
-  return state.data.repos.flatMap((repo) => repo.tasks.map((task) => ({ ...task, repo: repo.name, repo_url: repo.browser_url })));
+  return state.data.repos.flatMap((repo) => repo.tasks.map((task) => ({
+    ...task,
+    labels: [...new Set((task.labels || []).map(normLabel).filter(Boolean))],
+    repo: repo.name,
+    repo_url: repo.browser_url,
+  })));
 }
 function normalizeStatus(task) {
   if (task.completed || task.status === "Done") return "Done";
   if (task.status === "In Progress") return "In Progress";
   return "To Do";
 }
-function selectedValues(select) {
-  return Array.from(select.selectedOptions).map((option) => option.value).filter(Boolean);
-}
 function filteredTasks(ignoreRepoSel = false) {
-  const status = els.status.value;
-  const label = els.label.value;
-  const priority = els.priority.value;
   const text = els.text.value.trim().toLowerCase();
   return allTasks().filter((task) => {
     const haystack = [task.id, task.title, task.repo, task.status, task.priority, ...(task.labels || [])].join(" ").toLowerCase();
     if (!ignoreRepoSel && state.repoSel.size && !state.repoSel.has(task.repo)) return false;
-    if (status && normalizeStatus(task) !== status) return false;
-    if (label && !(task.labels || []).includes(label)) return false;
-    if (priority && task.priority !== priority) return false;
+    if (state.statusSel.size && !state.statusSel.has(normalizeStatus(task))) return false;
+    if (state.labelSel.size && !(task.labels || []).some((label) => state.labelSel.has(label))) return false;
+    if (state.prioritySel.size && !state.prioritySel.has(task.priority)) return false;
     if (text && !haystack.includes(text)) return false;
     return true;
   });
 }
-function setOptions(select, values, preserve = true) {
-  const selected = preserve ? new Set(selectedValues(select)) : new Set();
-  const prefix = select.multiple ? "" : '<option value="">All</option>';
-  select.innerHTML = prefix + values.map((value) => '<option value="' + esc(value) + '">' + esc(value) + '</option>').join("");
-  Array.from(select.options).forEach((option) => { option.selected = selected.has(option.value); });
-}
-function refreshFilters() {
+function renderFilterChips() {
   const tasks = allTasks();
-  setOptions(els.status, statusColumns, true);
-  setOptions(els.label, [...new Set(tasks.flatMap((task) => task.labels || []))].sort(), true);
-  setOptions(els.priority, [...new Set(tasks.map((task) => task.priority).filter(Boolean))].sort(), true);
+  const chipFilters = [
+    [els.status, state.statusSel, statusColumns],
+    [els.priority, state.prioritySel, [...new Set(tasks.map((task) => task.priority).filter(Boolean))].sort()]
+  ];
+  chipFilters.forEach(([container, selected, values]) => {
+    selected.forEach((value) => { if (!values.includes(value)) selected.delete(value); });
+    container.innerHTML = values.map((value) => '<button type="button" data-value="' + esc(value) + '" aria-pressed="' + selected.has(value) + '">' + esc(value) + '</button>').join("");
+  });
+  const labels = [...new Set(tasks.flatMap((task) => task.labels || []))].filter(Boolean).sort();
+  state.labelSel.forEach((value) => { if (!labels.includes(value)) state.labelSel.delete(value); });
+  els.label.innerHTML = labels.map((value) => '<button type="button" data-value="' + esc(value) + '" aria-pressed="' + state.labelSel.has(value) + '">' + esc(value) + '</button>').join("");
+  els.labelPickerBtn.textContent = state.labelSel.size === 0 ? "All ▾" : state.labelSel.size === 1 ? [...state.labelSel][0] + " ▾" : state.labelSel.size + " selected ▾";
+  els.labelPickerBtn.setAttribute("aria-expanded", String(state.labelPickerOpen));
+  els.labelPickerPop.hidden = !state.labelPickerOpen;
 }
 function render() {
   if (state.error) {
@@ -1258,6 +1290,7 @@ function render() {
     return;
   }
   if (!state.data) return;
+  renderFilterChips();
   const tasks = filteredTasks();
   els.meta.textContent = "Updated " + new Date(state.data.generated_at).toLocaleString();
   els.summary.textContent = allTasks().length + " tasks · " + tasks.length + " visible";
@@ -1377,20 +1410,45 @@ async function load() {
     if (!response.ok) throw new Error("HTTP " + response.status);
     state.data = await response.json();
     state.error = "";
-    refreshFilters();
     render();
   } catch (error) {
     state.error = "Failed to load tasks: " + error.message;
     render();
   }
 }
-[els.text, els.status, els.label, els.priority].forEach((el) => el.addEventListener("input", render));
+els.text.addEventListener("input", render);
 els.nav.addEventListener("click", (event) => {
   const btn = event.target.closest("button[data-repo]");
   if (!btn) return;
   const name = btn.dataset.repo;
   if (state.repoSel.has(name)) state.repoSel.delete(name); else state.repoSel.add(name);
   render();
+});
+[[els.status, state.statusSel], [els.label, state.labelSel], [els.priority, state.prioritySel]].forEach(([container, selected]) => {
+  container.addEventListener("click", (event) => {
+    const btn = event.target.closest("button[data-value]");
+    if (!btn) return;
+    const value = btn.dataset.value;
+    if (selected.has(value)) selected.delete(value); else selected.add(value);
+    render();
+  });
+});
+els.labelPickerBtn.addEventListener("click", () => {
+  state.labelPickerOpen = !state.labelPickerOpen;
+  render();
+});
+document.addEventListener("click", (event) => {
+  if (!(event.target instanceof Node) || !event.target.isConnected) return;
+  if (state.labelPickerOpen && !event.target.closest("#labelPickerBtn, #labelPickerPop")) {
+    state.labelPickerOpen = false;
+    render();
+  }
+});
+document.addEventListener("keydown", (event) => {
+  if (state.labelPickerOpen && event.key === "Escape") {
+    state.labelPickerOpen = false;
+    render();
+  }
 });
 els.boardTab.addEventListener("click", () => { state.view = "board"; render(); });
 els.listTab.addEventListener("click", () => { state.view = "list"; render(); });
