@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- Link task cards and list rows directly to Backlog.md `/tasks/:id` deep links now that upstream PR #755 has merged.
+
 ## [0.1.0] - 2026-07-09
 
 Initial OSS release.

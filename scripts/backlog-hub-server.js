@@ -707,10 +707,8 @@ function browserUrlFor(host, port) {
   return `http://${host}:${port}/`;
 }
 
-function taskUrlFor(repoUrl, _taskId) {
-  // Backlog.md 純正 web UI は `/tasks/:id` deep link 未実装 (TASK-14 で上流 PR 予定)。
-  // 上流実装までは repo top に遷移させる。
-  return repoUrl;
+function taskUrlFor(repoUrl, taskId) {
+  return `${repoUrl}tasks/${encodeURIComponent(taskId)}`;
 }
 
 function buildData(req) {
