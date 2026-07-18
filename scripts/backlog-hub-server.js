@@ -275,12 +275,13 @@ function spawnBrowserFor(repoRoot, port) {
   });
   child.on("error", (error) => {
     log("ERROR", `browser child error repo=${repoRoot}: ${error.message}`);
+    handleChildExit(repoRoot, port, null, null);
   });
 }
 
 function handleChildExit(repoRoot, port, code, signal) {
   const entry = children.get(repoRoot);
-  if (!entry) return;
+  if (!entry || !entry.child) return;
   const deadChild = entry.child;
   entry.child = null;
   const wasKilling = entry.killing;

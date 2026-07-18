@@ -16,6 +16,8 @@
     <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
     <key>BACKLOG_HUB_MANAGE_BROWSERS</key>
     <string>1</string>
+    <key>BACKLOG_HUB_CLI_PATH</key>
+    <string>@@BACKLOG_CLI_PATH@@</string>
     <key>BACKLOG_HUB_HOST</key>
     <string>@@HUB_HOST@@</string>
     <key>BACKLOG_HUB_TAILSCALE_LISTEN</key>

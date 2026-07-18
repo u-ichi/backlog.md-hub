@@ -155,10 +155,12 @@ rendered="$(mktemp "${TMPDIR:-/tmp}/backlog-md-hub-rendered.XXXXXX")"
 HOME="$home" BACKLOG_HUB_TAILSCALE_LISTEN=true bash -c '
   source "$1"
   resolve_tailscale_listen >/dev/null
+  BACKLOG_CLI_BIN="$HOME/.local/bin/backlog"
   render_plist "$2"
 ' _ "$INSTALLER" "$rendered"
 plutil -lint "$rendered" >/dev/null
 [[ "$(plutil -extract EnvironmentVariables.BACKLOG_HUB_TAILSCALE_LISTEN raw -o - "$rendered")" == "true" ]] || fail "rendered plist must contain the flag"
+[[ "$(plutil -extract EnvironmentVariables.BACKLOG_HUB_CLI_PATH raw -o - "$rendered")" == "$home/.local/bin/backlog" ]] || fail "rendered plist must contain the resolved backlog CLI path"
 rm -rf "$home" "$rendered"
 
 home="$(make_home)"

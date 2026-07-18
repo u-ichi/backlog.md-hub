@@ -175,16 +175,18 @@ sed_escape() {
 
 render_plist() {
   local output="$1"
-  local home_sed repo_sed host_sed tailscale_listen_sed
+  local home_sed repo_sed host_sed tailscale_listen_sed backlog_cli_sed
   home_sed="$(sed_escape "$HOME")"
   repo_sed="$(sed_escape "$REPO_ROOT")"
   host_sed="$(sed_escape "$HUB_HOST")"
   tailscale_listen_sed="$(sed_escape "$HUB_TAILSCALE_LISTEN")"
+  backlog_cli_sed="$(sed_escape "$BACKLOG_CLI_BIN")"
   sed \
     -e "s|@@HOME@@|$home_sed|g" \
     -e "s|@@REPO_ROOT@@|$repo_sed|g" \
     -e "s|@@HUB_HOST@@|$host_sed|g" \
     -e "s|@@TAILSCALE_LISTEN@@|$tailscale_listen_sed|g" \
+    -e "s|@@BACKLOG_CLI_PATH@@|$backlog_cli_sed|g" \
     "$TEMPLATE_PATH" > "$output"
 }
 
